@@ -1,0 +1,53 @@
+<!doctype html>
+<!--
+  The Hypergraph Project video title card and thumbnail, house style 1.0.0.
+  Everything scales with the window, so one file makes both sizes.
+
+  Fill it through the address:
+    title-card.html?code=MA-3/06&track=Probability%20%26%20Statistics&title=The%20law%20of%20large%20numbers&hours=4
+
+  Render to PNG with Chrome or Edge (any headless Chromium):
+    chrome --headless=new --hide-scrollbars --window-size=1920,1080 --screenshot=video/cards/title.png "file:///full/path/title-card.html?code=...&track=...&title=...&hours=4"
+    chrome --headless=new --hide-scrollbars --window-size=1280,720  --screenshot=video/cards/thumbnail.png "file:///...same address..."
+
+  Hold the title card for 3 seconds at the start of the video, silent. Do not edit the layout.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Title card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@500&family=Geist+Mono&family=Geist+Pixel&display=block" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 5vw;
+        box-sizing: border-box;
+        overflow: hidden;
+        background: #0f0f0f;
+        color: #f5f5f4;
+        font-family: "Geist", "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .head { display: flex; align-items: baseline; gap: 1.6vw; font-size: 2.2vw; }
+      .code { font-family: "Geist Pixel", "Geist Mono", monospace; }
+      .track { color: #a3a3a1; }
+      .title { max-width: 14em; margin: 0; font-size: 6.4vw; font-weight: 500; line-height: 1.02; letter-spacing: -0.035em; text-wrap: balance; }
+      .foot { display: flex; justify-content: space-between; font-family: "Geist Mono", monospace; font-size: 1.6vw; color: #a3a3a1; }
+    </style>
+  </head>
+  <body>
+    <p class="head"><span class="code" id="code">MA-3/06</span><span class="track" id="track">Probability &amp; Statistics</span></p>
+    <h1 class="title" id="title">The law of large numbers</h1>
+    <p class="foot"><span>The Hypergraph Project</span><span id="hours">4 h step</span></p>
+    <script>
+      const q = new URLSearchParams(location.search);
+      for (const id of ["code", "track", "title"]) if (q.get(id)) document.getElementById(id).textContent = q.get(id);
+      if (q.get("hours")) document.getElementById("hours").textContent = `${q.get("hours")} h step`;
+    </script>
+  </body>
+</html>

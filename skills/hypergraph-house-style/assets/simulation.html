@@ -1,0 +1,190 @@
+<!doctype html>
+<!--
+  The Hypergraph Project simulation template, house style 1.0.0.
+  One self-contained file: no external scripts, no network, no storage.
+  Keep the tokens, the layout, mulberry32 and animate(). Replace the example (a random walk).
+  Rules: references/simulations.md.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulation title</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #0f0f0f;
+        --muted: #5c5c5c;
+        --construction: #8a8a88;
+        --line: #dededc;
+        --fill: #ebebea;
+        --ground: #f5f5f4;
+        --surface: #ffffff;
+        --sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+        --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--ground);
+        color: var(--ink);
+        font: 15px/1.5 var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      .sim { display: grid; gap: 12px; max-width: 960px; margin: 0 auto; }
+      .prompt { margin: 0; }
+      .stage { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; background: var(--surface); }
+      canvas { display: block; width: 100%; height: 100%; }
+      .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; }
+      label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+      input[type="range"] { width: 180px; accent-color: var(--ink); }
+      button {
+        min-height: 36px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--ink);
+        color: var(--surface);
+        font: 500 14px var(--sans);
+        cursor: pointer;
+      }
+      button.quiet { background: var(--fill); color: var(--ink); }
+      button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+      .readout { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; font: 14px var(--mono); }
+      .readout div { display: flex; gap: 8px; }
+      .readout dt { color: var(--muted); }
+      .readout dd { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="sim">
+      <p class="prompt">Take steps of +1 or −1 at random. Try many steps, then reset and try again: the same seed gives the same walk.</p>
+      <div class="stage">
+        <canvas id="canvas" role="img" aria-label="An empty random walk."></canvas>
+      </div>
+      <div class="controls">
+        <label>Steps per click <input id="batch" type="range" min="1" max="200" value="20" /></label>
+        <button id="step">Take steps</button>
+        <button id="reset" class="quiet">Reset</button>
+      </div>
+      <dl class="readout" aria-live="polite">
+        <div><dt>Steps</dt><dd id="n">0</dd></div>
+        <div><dt>Position</dt><dd id="pos">0</dd></div>
+        <div><dt>Seed</dt><dd id="seed"></dd></div>
+      </dl>
+    </div>
+
+    <script>
+      "use strict";
+
+      // Seeded generator, so a learner and the notes see the same run. Do not replace with Math.random.
+      const SEED = 6;
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      const C = { ink: "#0f0f0f", muted: "#5c5c5c", construction: "#8a8a88", line: "#dededc", fill: "#ebebea" };
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      // Runs fn(progress) over ms, or jumps straight to the end when reduced motion is requested.
+      function animate(ms, fn) {
+        if (reduced.matches) return fn(1);
+        const start = performance.now();
+        function frame(now) {
+          const p = Math.min(1, (now - start) / ms);
+          fn(p);
+          if (p < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const $ = (id) => document.getElementById(id);
+      let rand, path;
+
+      function reset() {
+        rand = mulberry32(SEED);
+        path = [0];
+        $("seed").textContent = SEED;
+        draw(path.length);
+      }
+
+      function resize() {
+        const r = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(r.width * dpr);
+        canvas.height = Math.round(r.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw(path.length);
+      }
+
+      function draw(count) {
+        const w = canvas.clientWidth, h = canvas.clientHeight, pad = 24;
+        ctx.clearRect(0, 0, w, h);
+        const shown = path.slice(0, count);
+        const maxN = Math.max(50, path.length - 1);
+        const maxY = Math.max(10, ...path.map(Math.abs));
+        const x = (i) => pad + (i / maxN) * (w - 2 * pad);
+        const y = (v) => h / 2 - (v / maxY) * (h / 2 - pad);
+
+        // Guide: the starting level.
+        ctx.strokeStyle = C.construction;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad, y(0));
+        ctx.lineTo(w - pad, y(0));
+        ctx.stroke();
+
+        // The walk.
+        ctx.strokeStyle = C.ink;
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        shown.forEach((v, i) => (i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v))));
+        ctx.stroke();
+
+        // The current position, filled: the one thing to watch.
+        const last = shown.length - 1;
+        ctx.fillStyle = C.ink;
+        ctx.beginPath();
+        ctx.arc(x(last), y(shown[last]), 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        $("n").textContent = last;
+        $("pos").textContent = shown[last];
+        canvas.setAttribute("aria-label", `A random walk after ${last} steps, now at position ${shown[last]}.`);
+      }
+
+      $("step").addEventListener("click", () => {
+        const from = path.length;
+        const batch = Number($("batch").value);
+        for (let i = 0; i < batch; i++) path.push(path[path.length - 1] + (rand() < 0.5 ? -1 : 1));
+        animate(400, (p) => draw(from + Math.round(p * batch)));
+      });
+      $("reset").addEventListener("click", reset);
+      window.addEventListener("resize", resize);
+
+      reset();
+      resize();
+    </script>
+    <script>
+      // When embedded on the site, report the height so the frame fits without scrolling.
+      if (window.parent !== window) {
+        const report = () =>
+          window.parent.postMessage({ type: "hypergraph:sim-height", height: Math.ceil(document.body.getBoundingClientRect().height) }, "*");
+        new ResizeObserver(report).observe(document.body);
+        report();
+      }
+    </script>
+  </body>
+</html>

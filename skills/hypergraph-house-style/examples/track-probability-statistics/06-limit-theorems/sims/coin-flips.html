@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coin flips and the running mean</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #0f0f0f;
+        --muted: #5c5c5c;
+        --construction: #8a8a88;
+        --line: #dededc;
+        --fill: #ebebea;
+        --ground: #f5f5f4;
+        --surface: #ffffff;
+        --sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+        --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: var(--ground);
+        color: var(--ink);
+        font: 15px/1.5 var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      .sim { display: grid; gap: 12px; max-width: 960px; margin: 0 auto; }
+      .prompt { margin: 0; }
+      .stage { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; background: var(--surface); }
+      canvas { display: block; width: 100%; height: 100%; }
+      .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; }
+      label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+      label output { font-family: var(--mono); color: var(--ink); }
+      input[type="range"] { width: 180px; accent-color: var(--ink); }
+      .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+      button {
+        min-height: 36px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--ink);
+        color: var(--surface);
+        font: 500 14px var(--sans);
+        cursor: pointer;
+      }
+      button.quiet { background: var(--fill); color: var(--ink); }
+      button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+      .readout { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; font: 14px var(--mono); }
+      .readout div { display: flex; gap: 8px; }
+      .readout dt { color: var(--muted); }
+      .readout dd { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="sim">
+      <p class="prompt">Flip a coin that lands heads with probability <i>p</i>. Watch the proportion of heads: it wanders early, then stays inside the grey band, which narrows like 1/√<i>n</i>.</p>
+      <div class="stage">
+        <canvas id="canvas" role="img" aria-label="No flips yet."></canvas>
+      </div>
+      <div class="controls">
+        <label><span>Probability of heads, <i>p</i> = <output id="pOut">0.50</output></span>
+          <input id="p" type="range" min="0.1" max="0.9" step="0.05" value="0.5" />
+        </label>
+        <div class="buttons">
+          <button id="one">Flip once</button>
+          <button id="hundred">Flip 100</button>
+          <button id="thousand">Flip 1,000</button>
+          <button id="reset" class="quiet">Reset</button>
+        </div>
+      </div>
+      <dl class="readout" aria-live="polite">
+        <div><dt>Flips</dt><dd id="n">0</dd></div>
+        <div><dt>Heads</dt><dd id="heads">0</dd></div>
+        <div><dt>Proportion</dt><dd id="mean">–</dd></div>
+        <div><dt>Seed</dt><dd id="seed"></dd></div>
+      </dl>
+    </div>
+
+    <script>
+      "use strict";
+
+      const SEED = 6;
+      const MAX = 5000;
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      const C = { ink: "#0f0f0f", muted: "#5c5c5c", construction: "#8a8a88", line: "#dededc", fill: "#ebebea" };
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+      function animate(ms, fn) {
+        if (reduced.matches) return fn(1);
+        const start = performance.now();
+        function frame(now) {
+          const t = Math.min(1, (now - start) / ms);
+          fn(t);
+          if (t < 1) requestAnimationFrame(frame);
+        }
+        requestAnimationFrame(frame);
+      }
+
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const $ = (id) => document.getElementById(id);
+      let rand, p, means, heads, shown;
+
+      function reset() {
+        rand = mulberry32(SEED);
+        p = Number($("p").value);
+        means = [];
+        heads = 0;
+        shown = 0;
+        $("seed").textContent = SEED;
+        $("pOut").textContent = p.toFixed(2);
+        draw();
+      }
+
+      function flip(k, instant = false) {
+        const from = means.length;
+        const room = Math.min(k, MAX - from);
+        for (let i = 0; i < room; i++) {
+          if (rand() < p) heads++;
+          means.push(heads / (means.length + 1));
+        }
+        if (instant) {
+          shown = means.length;
+          return draw();
+        }
+        animate(Math.min(900, 200 + room), (t) => {
+          shown = from + Math.round(t * room);
+          draw();
+        });
+      }
+
+      function resize() {
+        const r = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = Math.round(r.width * dpr);
+        canvas.height = Math.round(r.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+      }
+
+      function draw() {
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const left = 48, right = 16, top = 16, bottom = 36;
+        ctx.clearRect(0, 0, w, h);
+        // The x axis is logarithmic in the number of flips, so the early wandering stays visible.
+        const xmax = Math.log10(Math.max(100, means.length));
+        const x = (n) => left + (Math.log10(n) / xmax) * (w - left - right);
+        const y = (v) => top + (1 - v) * (h - top - bottom);
+        const sd = Math.sqrt(p * (1 - p));
+
+        // Band: two standard deviations of the sample mean either side of p.
+        ctx.fillStyle = C.fill;
+        ctx.beginPath();
+        const steps = 200;
+        for (let i = 0; i <= steps; i++) {
+          const n = Math.pow(10, (i / steps) * xmax);
+          const v = Math.min(1, p + (2 * sd) / Math.sqrt(n));
+          i ? ctx.lineTo(x(n), y(v)) : ctx.moveTo(x(n), y(v));
+        }
+        for (let i = steps; i >= 0; i--) {
+          const n = Math.pow(10, (i / steps) * xmax);
+          ctx.lineTo(x(n), y(Math.max(0, p - (2 * sd) / Math.sqrt(n))));
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Axes and the true value.
+        ctx.strokeStyle = C.construction;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(left, y(0));
+        ctx.lineTo(w - right, y(0));
+        ctx.moveTo(left, y(0));
+        ctx.lineTo(left, y(1));
+        ctx.stroke();
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(left, y(p));
+        ctx.lineTo(w - right, y(p));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = C.muted;
+        ctx.font = "13px Geist, Arial, sans-serif";
+        ctx.textAlign = "right";
+        for (const v of [0, 0.5, 1]) ctx.fillText(v.toFixed(1), left - 8, y(v) + 4);
+        ctx.textAlign = "center";
+        for (let e = 0; e <= Math.floor(xmax); e++) ctx.fillText((10 ** e).toLocaleString("en"), x(10 ** e), h - 12);
+
+        // The running proportion of heads.
+        if (shown > 0) {
+          ctx.strokeStyle = C.ink;
+          ctx.lineWidth = 1.5;
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          for (let i = 0; i < shown; i++) i ? ctx.lineTo(x(i + 1), y(means[i])) : ctx.moveTo(x(1), y(means[0]));
+          ctx.stroke();
+          ctx.fillStyle = C.ink;
+          ctx.beginPath();
+          ctx.arc(x(shown), y(means[shown - 1]), 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        const m = shown ? means[shown - 1] : null;
+        const headsShown = shown ? Math.round(m * shown) : 0;
+        $("n").textContent = shown.toLocaleString("en");
+        $("heads").textContent = headsShown.toLocaleString("en");
+        $("mean").textContent = m === null ? "–" : m.toFixed(3);
+        canvas.setAttribute(
+          "aria-label",
+          shown ? `After ${shown} flips the proportion of heads is ${m.toFixed(3)}; the true probability is ${p.toFixed(2)}.` : "No flips yet."
+        );
+        const full = means.length >= MAX;
+        for (const id of ["one", "hundred", "thousand"]) $(id).disabled = full;
+      }
+
+      $("one").addEventListener("click", () => flip(1));
+      $("hundred").addEventListener("click", () => flip(100));
+      $("thousand").addEventListener("click", () => flip(1000));
+      // Every start is the same still state: the seed's first ten flips, nothing moving.
+      function start() {
+        reset();
+        flip(10, true);
+      }
+      $("reset").addEventListener("click", start);
+      $("p").addEventListener("input", start);
+      window.addEventListener("resize", resize);
+
+      reset();
+      resize();
+      start();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "hypergraph-house-style",
+  "version": "1.2.0",
+  "description": "House style for The Hypergraph Project: notes, diagrams, plots, simulations and video assets that match across every track.",
+  "author": { "name": "The Hypergraph Project" },
+  "license": "MIT",
+  "keywords": ["education", "open-source", "style-guide", "notes", "diagrams", "video"]
+}

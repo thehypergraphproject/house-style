@@ -1,0 +1,11 @@
+{
+  "name": "hypergraph",
+  "owner": { "name": "The Hypergraph Project" },
+  "plugins": [
+    {
+      "name": "hypergraph-house-style",
+      "source": "./",
+      "description": "House style for The Hypergraph Project: notes, diagrams, plots, simulations and video assets that match across every track."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="320" viewBox="0 0 720 320" role="img" aria-labelledby="figure-title">
+  <!-- The Hypergraph Project figure template, house style 1.0.0.
+       Keep the styles and the marker. Replace the example drawing.
+       Rules: references/figures.md. Check: node scripts/check.mjs <track>. -->
+  <title id="figure-title">Short description of the figure</title>
+  <defs>
+    <style>
+      .line { fill: none; stroke: #0F0F0F; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+      .guide { fill: none; stroke: #8A8A88; stroke-width: 1; }
+      .dashed { stroke-dasharray: 6 4; }
+      .region { fill: #EBEBEA; stroke: #0F0F0F; stroke-width: 1.5; }
+      .solid { fill: #0F0F0F; }
+      .open { fill: #FFFFFF; stroke: #0F0F0F; stroke-width: 1.5; }
+      .label { font-family: Geist, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0F0F0F; }
+      .note { font-family: Geist, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #5C5C5C; }
+      .math { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 16px; fill: #0F0F0F; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#0F0F0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- Example: a region, a guide line, a hypothetical path, two points and labels. -->
+  <g>
+    <rect class="region" x="48" y="72" width="216" height="168" rx="4" />
+    <text class="label" x="48" y="56">Sample space</text>
+  </g>
+  <g>
+    <line class="guide" x1="264" y1="156" x2="672" y2="156" />
+    <path class="line" d="M264 156 C 360 156, 400 96, 504 96" marker-end="url(#arrow)" />
+    <path class="line dashed" d="M264 156 C 360 156, 400 216, 504 216" marker-end="url(#arrow)" />
+  </g>
+  <g>
+    <circle class="solid" cx="528" cy="96" r="4" />
+    <circle class="open" cx="528" cy="216" r="4" />
+    <text class="label" x="544" y="101">What happens</text>
+    <text class="note" x="544" y="221">What could have</text>
+    <text class="math" x="552" y="150">x</text>
+  </g>
+</svg>

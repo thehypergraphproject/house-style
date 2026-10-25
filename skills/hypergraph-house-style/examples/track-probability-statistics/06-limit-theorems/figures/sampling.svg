@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="288" viewBox="0 0 720 288" role="img" aria-labelledby="sampling-title">
+  <title id="sampling-title">A skewed distribution, samples of n draws from it, and the bell-shaped distribution of their means</title>
+  <defs>
+    <style>
+      .line { fill: none; stroke: #0F0F0F; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+      .guide { fill: none; stroke: #8A8A88; stroke-width: 1; }
+      .region { fill: #EBEBEA; stroke: #0F0F0F; stroke-width: 1.5; stroke-linejoin: round; }
+      .box { fill: #FFFFFF; stroke: #0F0F0F; stroke-width: 1.5; }
+      .solid { fill: #0F0F0F; }
+      .label { font-family: Geist, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #0F0F0F; }
+      .note { font-family: Geist, "Helvetica Neue", Arial, sans-serif; font-size: 14px; fill: #5C5C5C; }
+      .math { font-family: KaTeX_Math, "Times New Roman", serif; font-style: italic; font-size: 16px; fill: #0F0F0F; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#0F0F0F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+    </marker>
+  </defs>
+
+  <!-- One draw: a skewed distribution. -->
+  <g>
+    <text class="label" x="48" y="72">One draw</text>
+    <line class="guide" x1="40" y1="232" x2="216" y2="232" />
+    <path class="region" d="M48 232 L48 100 C 80 140, 112 204, 208 228 L208 232 Z" />
+    <text class="note" x="48" y="260">Skewed</text>
+  </g>
+
+  <path class="line" d="M224 156 L252 156" marker-end="url(#arrow)" />
+
+  <!-- Samples: each row is n draws, and gives one mean. -->
+  <g>
+    <text class="label" x="264" y="72">Samples of <tspan class="math">n</tspan> draws</text>
+    <g>
+      <rect class="box" x="264" y="92" width="120" height="32" rx="4" />
+      <circle class="solid" cx="284" cy="108" r="4" /><circle class="solid" cx="304" cy="108" r="4" /><circle class="solid" cx="324" cy="108" r="4" /><circle class="solid" cx="344" cy="108" r="4" /><circle class="solid" cx="364" cy="108" r="4" />
+      <path class="line" d="M392 108 L428 108" marker-end="url(#arrow)" />
+      <text class="math" x="438" y="113">x̄<tspan baseline-shift="sub" font-size="12">1</tspan></text>
+    </g>
+    <g>
+      <rect class="box" x="264" y="140" width="120" height="32" rx="4" />
+      <circle class="solid" cx="284" cy="156" r="4" /><circle class="solid" cx="304" cy="156" r="4" /><circle class="solid" cx="324" cy="156" r="4" /><circle class="solid" cx="344" cy="156" r="4" /><circle class="solid" cx="364" cy="156" r="4" />
+      <path class="line" d="M392 156 L428 156" marker-end="url(#arrow)" />
+      <text class="math" x="438" y="161">x̄<tspan baseline-shift="sub" font-size="12">2</tspan></text>
+    </g>
+    <g>
+      <rect class="box" x="264" y="188" width="120" height="32" rx="4" />
+      <circle class="solid" cx="284" cy="204" r="4" /><circle class="solid" cx="304" cy="204" r="4" /><circle class="solid" cx="324" cy="204" r="4" /><circle class="solid" cx="344" cy="204" r="4" /><circle class="solid" cx="364" cy="204" r="4" />
+      <path class="line" d="M392 204 L428 204" marker-end="url(#arrow)" />
+      <text class="math" x="438" y="209">x̄<tspan baseline-shift="sub" font-size="12">3</tspan></text>
+    </g>
+    <text class="note" x="264" y="260">Each sample gives one mean</text>
+  </g>
+
+  <path class="line" d="M468 156 L496 156" marker-end="url(#arrow)" />
+
+  <!-- The means: close to normal, centred on the mean of one draw. -->
+  <g>
+    <text class="label" x="504" y="72">Means of many samples</text>
+    <line class="guide" x1="504" y1="232" x2="696" y2="232" />
+    <path class="region" d="M512 232 C 568 232, 576 104, 600 104 C 624 104, 632 232, 688 232 Z" />
+    <text class="note" x="504" y="260">Close to normal</text>
+  </g>
+</svg>

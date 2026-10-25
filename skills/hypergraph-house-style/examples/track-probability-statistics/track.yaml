@@ -1,0 +1,14 @@
+# Example only: a cut-down track repository holding one finished step in the house style.
+title: Probability & Statistics
+tagline: Reasoning about uncertainty, from counting outcomes to fitting models to data.
+summary: >
+  Probability from first principles, then the statistics built on it:
+  estimation, testing and regression, with simulation throughout.
+field: mathematics
+level: Beginner
+status: in-progress
+before: [calculus]
+maintainers: [ada-example]
+style: 1
+macros:
+  "\Var": "\operatorname{Var}"
