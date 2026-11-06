@@ -3,7 +3,7 @@ name: hypergraph-house-style
 description: House style for The Hypergraph Project, a free open library of learning tracks. Use it whenever you write, convert, restyle or review anything for a Hypergraph track repository - a step's notes, exercises, an SVG diagram, a matplotlib plot, an interactive simulation, a video title card, end card, captions or a Manim animation - or when you turn someone's existing notes into Hypergraph steps. It fixes the file layout, front matter, section order, voice, maths notation, monochrome palette, type, figure and video specs, credits and licence rules, and includes scripts that scaffold a step and check a track before a pull request.
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
   project: The Hypergraph Project
 ---
 

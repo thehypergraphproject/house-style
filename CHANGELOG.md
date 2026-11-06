@@ -8,6 +8,13 @@ The house style is versioned so that every track can say which rules it follows 
 
 Each release is tagged `vX.Y.Z`, and the moving tag `v1` always points at the latest 1.x release. Track CI checks out `v<style>`.
 
+## 1.2.1
+
+The project's new identity on the video cards.
+
+- The title card and end card set the name as the project's wordmark: a rounded tile with an H cut out of it as a route map stands in for the capital H, with "The" and "Project" in Geist and "ypergraph" in Geist Pixel. It replaces the plain and all-pixel name in the cards' foot. Thumbnails, rendered from the title card, change with it.
+- `references/video.md` says the cards carry the wordmark and that it is never retyped, redrawn or recoloured.
+
 ## 1.2.0
 
 A track's whole outline now lives in its repository, and long tracks can be split into groups.

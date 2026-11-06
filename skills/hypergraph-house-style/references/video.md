@@ -23,6 +23,8 @@ Every video is published by The Hypergraph Project on its own YouTube channel, n
 2. **The body.** Start with the question, as the notes do. No channel intro, no "hey everyone", no asking viewers to like or subscribe, no sponsor segments.
 3. **End card**, 8 seconds: `assets/end-card.html`. Everyone who made the video, and where the notes are.
 
+Both cards carry the project's wordmark, the mark standing in for the H of Hypergraph, in their foot. It is drawn in the templates; never retype the name, redraw the mark or recolour it.
+
 Chapters follow the notes' sections and go in the description as timestamps.
 
 ## Look
